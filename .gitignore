@@ -1,2 +1,4 @@
 databases/
 .env
+.gitignore
+__pychache__/

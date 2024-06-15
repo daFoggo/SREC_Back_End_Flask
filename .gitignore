@@ -1,0 +1,5 @@
+# Ignore the databases folder
+databases/
+
+# Ignore the .env file
+.env

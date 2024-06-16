@@ -23,7 +23,7 @@ jwt = JWTManager(app)
 CORS(app, resources={r"*": {"origins": "*"}})
 
 def get_db_connection():
-    conn = sqlite3.connect("./databases/users.db")
+    conn = sqlite3.connect("./databases/srec.db")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -115,3 +115,6 @@ def get_middle_code():
 @cross_origin()
 def get_senior_code():
     return jsonify(senior_get_code()), 200
+
+if __name__ == "__main__":
+    app.run()

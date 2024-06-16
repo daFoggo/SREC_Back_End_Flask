@@ -1,17 +1,17 @@
 def middle_get_code():
     import sqlite3
-    conn = sqlite3.connect('./databases/code_data.db')
+    conn = sqlite3.connect('./databases/srec.db')
     cursor = conn.cursor()
 
-    cursor.execute('SELECT * FROM CodeData WHERE difficulty = 1 OR difficulty = 7 OR difficulty = 8')
+    cursor.execute('SELECT * FROM code_data WHERE difficulty = 1 OR difficulty = 7 OR difficulty = 8')
     conn.commit()
     easy_tests = cursor.fetchall()
 
-    cursor.execute('SELECT * FROM CodeData WHERE difficulty = 2 OR difficulty = 10 OR difficulty = 11 OR difficulty = 12')
+    cursor.execute('SELECT * FROM code_data WHERE difficulty = 2 OR difficulty = 10 OR difficulty = 11 OR difficulty = 12')
     conn.commit()
     medium_tests = cursor.fetchall()
 
-    cursor.execute('SELECT * FROM codeData WHERE difficulty = 3 OR difficulty = 6 OR difficulty = 13 OR difficulty = 14 OR difficulty = 15 OR difficulty = 16 OR difficulty = 17 OR difficulty = 19 OR difficulty = 20 OR difficulty = 21 OR difficulty = 22 OR difficulty = 23')
+    cursor.execute('SELECT * FROM code_data WHERE difficulty = 3 OR difficulty = 6 OR difficulty = 13 OR difficulty = 14 OR difficulty = 15 OR difficulty = 16 OR difficulty = 17 OR difficulty = 19 OR difficulty = 20 OR difficulty = 21 OR difficulty = 22 OR difficulty = 23')
     conn.commit()
     hard_tests = cursor.fetchall()
     conn.close()

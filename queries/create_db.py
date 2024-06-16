@@ -4,7 +4,7 @@ import os
 def create_database():
     current_dir = os.path.dirname(__file__)
     
-    db_path = os.path.abspath(os.path.join(current_dir, '..', 'databases', 'code_data.db'))
+    db_path = os.path.abspath(os.path.join(current_dir, '..', 'databases', 'srec.db'))
     
     if not os.path.isfile(db_path):
         print(f"Database file '{db_path}' does not exist.")

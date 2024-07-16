@@ -833,19 +833,19 @@ def get_virtual_interview_scores():
 
     return jsonify(response_data), 200
 
-def b64_to_file(data,file_name,folder='.'):
-   try:
-      if not os.path.exists(folder):
-         os.makedirs(folder)
-      path = f'{folder}/{file_name}'
-      with open(path,'wb') as f:
-         f.write(base64.b64decode(data))
-      return path
-   except Exception as e:
-      print(e)
-      return None
-  
 import traceback
+
+def b64_to_file(base64_string, filename, folder="./static/recorded_videos"):
+    try:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        file_path = os.path.join(folder, filename)
+        with open(file_path, "wb") as file:
+            file.write(base64.b64decode(base64_string))
+        return file_path
+    except Exception as e:
+        print(f"Error saving video file: {e}")
+        return None
 
 @app.route("/submit-virtual-interview-scores", methods=["PUT"])
 @cross_origin()
@@ -856,18 +856,18 @@ def submit_virtual_interview_scores():
     current_question_index = data.get("current_question_index")
     status = data.get("status")
     video_data = data.get("video_data")
-    
+
     if candidate_id is None or status is None:
         return jsonify({"msg": "Data insufficiency"}), 400
-    
+
     pathFile = b64_to_file(video_data, f"{candidate_id}_{current_question_index}_capture.mp4", folder="./static/recorded_videos")
     if pathFile is None:
         return jsonify({"msg": "Failed to save video file"}), 500
-    
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute(
             """
             UPDATE virtual_interview_scores 
@@ -888,6 +888,7 @@ def submit_virtual_interview_scores():
     finally:
         if conn:
             conn.close()
+
         
 @app.route("/get-interview-questions")
 @cross_origin()
@@ -900,14 +901,38 @@ def analyze():
     conn = None
     try:
         data = request.get_json()
-        filepath = data.get("filepath")
-        core_answer = data.get("answer")
+        candidate_id = data.get("candidate_id")
+        current_question_index = data.get("current_question_index")
         interview_id = data.get("interview_id")
-        analyze_result = prediction(filepath)
-        analyze_result_json = json.dumps(analyze_result)  
-        cosine_sim = answer_matching(filepath, core_answer)
+        question_id = data.get("question_id")
+
+        if not interview_id or not question_id:
+            return jsonify({'error': 'interview_id and question_id are required'}), 400
+        
+        filepath = f"./static/recorded_videos/{candidate_id}_{current_question_index}_capture.mp4"
+        logger.debug(f"Analyzing video file: {filepath}")
         conn = get_db_connection()
         cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT answer
+            FROM question_data
+            WHERE question_id = ?
+            """, 
+            (question_id,)
+        )
+        
+        core_answer_row = cursor.fetchone()
+        if not core_answer_row:
+            return jsonify({'error': 'Invalid question_id provided'}), 400
+        
+        core_answer = core_answer_row['answer']
+        
+        
+        analyze_result = prediction(filepath)
+        analyze_result_json = json.dumps(analyze_result)
+        cosine_sim = answer_matching(filepath, core_answer)
 
         id = str(uuid.uuid4())
 
@@ -930,7 +955,7 @@ def analyze():
 
         conn.commit()
 
-        return jsonify({'msg': "Inserted data successfully" }), 200
+        return jsonify({'msg': "Inserted data successfully"}), 200
 
     except Exception as e:
         if conn:
@@ -939,7 +964,6 @@ def analyze():
     finally:
         if conn:
             conn.close()
-
 
 # Summary module
 @app.route("/get-recruiter-with-candidates", methods=["POST"])

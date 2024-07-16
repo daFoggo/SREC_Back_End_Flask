@@ -21,7 +21,6 @@ model = Models_Emotions_Fluency(model_emotion,model_fluency)
 logging.basicConfig(level=logging.INFO)
 
 def mp4_to_wav(mp4_filename):
-    
     # Define file paths
     mp3_filename = 'speech.mp3'
     wav_filename = 'speech.wav'
@@ -56,7 +55,7 @@ def mp4_to_wav(mp4_filename):
         print("Google Speech Recognition could not understand audio")
     except sr.RequestError as e:
         print(f"Could not request results from Google Speech Recognition service; {e}")
-    return 
+    return
 
 def video_prediction(img):
     emotion_labels = ['confident', 'unconfident']
@@ -86,11 +85,6 @@ def video_prediction(img):
     return results
 
 def wav_prediction(file_path):
-    if os.path.exists('./speech.wav'):
-        os.remove('./speech.wav')
-    if os.path.exists('./speech.mp3'):
-        os.remove('./speech.mp3')
-
     mp4_to_wav(file_path)
     wav_path = "./speech.wav"
     pred_emotion, pred_fluency, average_fluency = model.predict(wav_path, cutdur=2)

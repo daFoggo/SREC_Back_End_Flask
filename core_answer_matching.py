@@ -7,8 +7,8 @@ from numpy.linalg import norm
 from langchain_openai import OpenAIEmbeddings
 from openai import OpenAI
 import speech_recognition as sr
+
 def mp4_to_wav(mp4_filename):
-    
     # Define file paths
     mp3_filename = 'speech.mp3'
     wav_filename = 'speech.wav'
@@ -43,7 +43,7 @@ def mp4_to_wav(mp4_filename):
         print("Google Speech Recognition could not understand audio")
     except sr.RequestError as e:
         print(f"Could not request results from Google Speech Recognition service; {e}")
-    return 
+    return
 
 
 
@@ -52,11 +52,6 @@ def answer_matching(file_path, core_answer):
     embeddings = OpenAIEmbeddings(model="text-embedding-3-large", dimensions=3072)
     os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_KEY')
     client.api_key = os.environ["OPENAI_API_KEY"]
-    if os.path.exists('./speech.wav'):
-        os.remove('./speech.wav')
-    if os.path.exists('./speech.mp3'):
-        os.remove('./speech.mp3')
-
     mp4_to_wav(file_path)
     wav_path = "./speech.wav"
 

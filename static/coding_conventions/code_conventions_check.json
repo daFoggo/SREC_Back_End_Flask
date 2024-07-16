@@ -1,0 +1,377 @@
+{
+    "E101": {
+        "error_code": "E101",
+        "description": "indentation contains mixed spaces and tabs",
+        "severity": 3
+    },
+    "E111": {
+        "error_code": "E111",
+        "description": "indentation is not a multiple of four",
+        "severity": 3
+    },
+    "E112": {
+        "error_code": "E112",
+        "description": "expected an indented block",
+        "severity": 3
+    },
+    "E113": {
+        "error_code": "E113",
+        "description": "unexpected indentation",
+        "severity": 3
+    },
+    "E114": {
+        "error_code": "E114",
+        "description": "indentation is not a multiple of four (comment)",
+        "severity": 3
+    },
+    "E115": {
+        "error_code": "E115",
+        "description": "expected an indented block (comment)",
+        "severity": 3
+    },
+    "E116": {
+        "error_code": "E116",
+        "description": "unexpected indentation (comment)",
+        "severity": 3
+    },
+    "E121": {
+        "error_code": "E121",
+        "description": "continuation line under-indented for hanging indent",
+        "severity": 2
+    },
+    "E122": {
+        "error_code": "E122",
+        "description": "continuation line missing indentation or outdented",
+        "severity": 2
+    },
+    "E123": {
+        "error_code": "E123",
+        "description": "closing bracket does not match indentation of opening bracket's line",
+        "severity": 3
+    },
+    "E124": {
+        "error_code": "E124",
+        "description": "closing bracket does not match visual indentation",
+        "severity": 3
+    },
+    "E125": {
+        "error_code": "E125",
+        "description": "continuation line with same indent as next logical line",
+        "severity": 2
+    },
+    "E126": {
+        "error_code": "E126",
+        "description": "continuation line over-indented for hanging indent",
+        "severity": 2
+    },
+    "E127": {
+        "error_code": "E127",
+        "description": "continuation line over-indented for visual indent",
+        "severity": 2
+    },
+    "E128": {
+        "error_code": "E128",
+        "description": "continuation line under-indented for visual indent",
+        "severity": 2
+    },
+    "E129": {
+        "error_code": "E129",
+        "description": "visually indented line with same indent as next logical line",
+        "severity": 2
+    },
+    "E131": {
+        "error_code": "E131",
+        "description": "continuation line unaligned for hanging indent",
+        "severity": 2
+    },
+    "E133": {
+        "error_code": "E133",
+        "description": "closing bracket is missing indentation",
+        "severity": 3
+    },
+    "E201": {
+        "error_code": "E201",
+        "description": "whitespace after '('",
+        "severity": 3
+    },
+    "E202": {
+        "error_code": "E202",
+        "description": "whitespace before ')'",
+        "severity": 3
+    },
+    "E203": {
+        "error_code": "E203",
+        "description": "whitespace before ','",
+        "severity": 3
+    },
+    "E211": {
+        "error_code": "E211",
+        "description": "whitespace before '('",
+        "severity": 3
+    },
+    "E221": {
+        "error_code": "E221",
+        "description": "multiple spaces before operator",
+        "severity": 3
+    },
+    "E222": {
+        "error_code": "E222",
+        "description": "multiple spaces after operator",
+        "severity": 3
+    },
+    "E223": {
+        "error_code": "E223",
+        "description": "tab before operator",
+        "severity": 3
+    },
+    "E224": {
+        "error_code": "E224",
+        "description": "tab after operator",
+        "severity": 3
+    },
+    "E225": {
+        "error_code": "E225",
+        "description": "missing whitespace around operator",
+        "severity": 3
+    },
+    "E226": {
+        "error_code": "E226",
+        "description": "missing whitespace around arithmetic operator",
+        "severity": 3
+    },
+    "E227": {
+        "error_code": "E227",
+        "description": "missing whitespace around bitwise or shift operator",
+        "severity": 3
+    },
+    "E228": {
+        "error_code": "E228",
+        "description": "missing whitespace around modulo operator",
+        "severity": 3
+    },
+    "E231": {
+        "error_code": "E231",
+        "description": "missing whitespace after ','",
+        "severity": 3
+    },
+    "E241": {
+        "error_code": "E241",
+        "description": "multiple spaces after ','",
+        "severity": 3
+    },
+    "E242": {
+        "error_code": "E242",
+        "description": "tab after ','",
+        "severity": 3
+    },
+    "E251": {
+        "error_code": "E251",
+        "description": "unexpected spaces around keyword / parameter equals",
+        "severity": 2
+    },
+    "E261": {
+        "error_code": "E261",
+        "description": "at least two spaces before inline comment",
+        "severity": 2
+    },
+    "E262": {
+        "error_code": "E262",
+        "description": "inline comment should start with '# '",
+        "severity": 2
+    },
+    "E265": {
+        "error_code": "E265",
+        "description": "block comment should start with '# '",
+        "severity": 2
+    },
+    "E266": {
+        "error_code": "E266",
+        "description": "too many leading '#' for block comment",
+        "severity": 2
+    },
+    "E271": {
+        "error_code": "E271",
+        "description": "multiple spaces after keyword",
+        "severity": 3
+    },
+    "E272": {
+        "error_code": "E272",
+        "description": "multiple spaces before keyword",
+        "severity": 3
+    },
+    "E273": {
+        "error_code": "E273",
+        "description": "tab after keyword",
+        "severity": 3
+    },
+    "E274": {
+        "error_code": "E274",
+        "description": "tab before keyword",
+        "severity": 3
+    },
+    "E275": {
+        "error_code": "E275",
+        "description": "missing whitespace after keyword",
+        "severity": 3
+    },
+    "E301": {
+        "error_code": "E301",
+        "description": "expected 1 blank line, found 0",
+        "severity": 3
+    },
+    "E302": {
+        "error_code": "E302",
+        "description": "expected 2 blank lines, found 0",
+        "severity": 3
+    },
+    "E303": {
+        "error_code": "E303",
+        "description": "too many blank lines (3)",
+        "severity": 3
+    },
+    "E304": {
+        "error_code": "E304",
+        "description": "blank lines found after function decorator",
+        "severity": 3
+    },
+    "E305": {
+        "error_code": "E305",
+        "description": "expected 2 blank lines after class or function definition, found 1",
+        "severity": 3
+    },
+    "E306": {
+        "error_code": "E306",
+        "description": "expected 1 blank line after class or function definition, found 0",
+        "severity": 3
+    },
+    "E401": {
+        "error_code": "E401",
+        "description": "multiple imports on one line",
+        "severity": 3
+    },
+    "E402": {
+        "error_code": "E402",
+        "description": "module level import not at top of file",
+        "severity": 3
+    },
+    "E501": {
+        "error_code": "E501",
+        "description": "line too long (82 > 79 characters)",
+        "severity": 3
+    },
+    "E502": {
+        "error_code": "E502",
+        "description": "the backslash is redundant between brackets",
+        "severity": 2
+    },
+    "E701": {
+        "error_code": "E701",
+        "description": "multiple statements on one line (colon)",
+        "severity": 3
+    },
+    "E702": {
+        "error_code": "E702",
+        "description": "multiple statements on one line (semicolon)",
+        "severity": 3
+    },
+    "E703": {
+        "error_code": "E703",
+        "description": "statement ends with a semicolon",
+        "severity": 3
+    },
+    "E704": {
+        "error_code": "E704",
+        "description": "multiple statements on one line (def)",
+        "severity": 3
+    },
+    "E711": {
+        "error_code": "E711",
+        "description": "comparison to None should be 'if cond is None:'",
+        "severity": 2
+    },
+    "E712": {
+        "error_code": "E712",
+        "description": "comparison to True should be 'if cond is True:' or 'if cond:'",
+        "severity": 2
+    },
+    "E713": {
+        "error_code": "E713",
+        "description": "test for membership should be 'not in'",
+        "severity": 2
+    },
+    "E714": {
+        "error_code": "E714",
+        "description": "test for object identity should be 'is not'",
+        "severity": 2
+    },
+    "E721": {
+        "error_code": "E721",
+        "description": "do not compare types, use 'isinstance()'",
+        "severity": 2
+    },
+    "E722": {
+        "error_code": "E722",
+        "description": "do not use bare except, specify exception instead",
+        "severity": 2
+    },
+    "E731": {
+        "error_code": "E731",
+        "description": "do not assign a lambda expression, use a def",
+        "severity": 2
+    },
+    "E741": {
+        "error_code": "E741",
+        "description": "ambiguous variable name 'l'",
+        "severity": 2
+    },
+    "E742": {
+        "error_code": "E742",
+        "description": "do not use 'l' as a variable name",
+        "severity": 2
+    },
+    "E743": {
+        "error_code": "E743",
+        "description": "variable name used for both global and local scope",
+        "severity": 2
+    },
+    "E901": {
+        "error_code": "E901",
+        "description": "SyntaxError or IndentationError",
+        "severity": 1
+    },
+    "E902": {
+        "error_code": "E902",
+        "description": "IOError",
+        "severity": 1
+    },
+    "E999": {
+        "error_code": "E999",
+        "description": "SyntaxError",
+        "severity": 1
+    },
+    "W191": {
+        "error_code": "W191",
+        "description": "indentation contains tabs",
+        "severity": 2
+    },
+    "W291": {
+        "error_code": "W291",
+        "description": "trailing whitespace",
+        "severity": 2
+    },
+    "W292": {
+        "error_code": "W292",
+        "description": "no newline at end of file",
+        "severity": 2
+    },
+    "W293": {
+        "error_code": "W293",
+        "description": "blank line contains whitespace",
+        "severity": 2
+    },
+    "W391": {
+        "error_code": "W391",
+        "description": "blank line at end of file",
+        "severity": 2
+    }
+}

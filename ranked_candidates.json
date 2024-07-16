@@ -1,0 +1,32 @@
+{
+    "none": {
+        "gmail": "none",
+        "skills": "none",
+        "academic": "none",
+        "cv_matching": 0.052574002335567124
+    },
+    "John Horton": {
+        "gmail": "john.joseph.horton@gmail.com",
+        "skills": "economics, labor economics, econometrics, R, data science, Python, SQL, LaTeX, Mathematica, crowdsourcing, statistics, Emacs, mathematical modeling, organizational economics, Stata, machine learning, data analysis, data mining, analytics, public policy",
+        "academic": "PhD",
+        "cv_matching": 0.4171236661653147
+    },
+    "vasanthi kasinathan": {
+        "gmail": "none",
+        "skills": "Microsoft Office Suite, JDE One World, FinanceOne, QuickBooks, IBM S36, Accpac, EasyPay, ReadyPay",
+        "academic": "ACCA, FCCA, LCCI Diploma in Cost Accounting",
+        "cv_matching": 0.46707492863691596
+    },
+    "abhijeet m. khambe": {
+        "gmail": "abhijeetmkhambe@gmail.com",
+        "skills": "j2ee, html, was, tomcat, struts, eclipse, toad, xmlspy, oracle10g, java, sql, microsoft windows xp, windows 7, ibm websphere lombardi 7.2.0.4, prpc pega 6.2, prpc pega 7",
+        "academic": "none",
+        "cv_matching": 0.3703520677357312
+    },
+    "Luong Van Khang": {
+        "gmail": "none",
+        "skills": "Python, Django, FastAPI, JavaScript, Docker, Postgres, MongoDB, SQLAlchemy, CI/CD, Pandas, Postgres Python Coding, Finance, PyCharm, ReactJS, Ubuntu, VSCode",
+        "academic": "University",
+        "cv_matching": 0.41647153187727637
+    }
+}

@@ -356,12 +356,18 @@ def generate_account_and_send_email():
         conn.close()
         return jsonify({"msg": f"Unexpected error: {str(e)}"}), 500
 
-# Code assessment module
-@app.route("/get-code-assessment-scores", methods=["POST", "GET"])
+@app.route("/test", methods=["GET"])
 @cross_origin()
-def get_code_assessment_scores():
+def test():
+    return jsonify({"msg": "Test successful"}), 200
+
+# Code assessment module
+@app.route("/get-code-assessment-scores", methods=["POST"])
+@cross_origin()
+def get_code_assessment_scores(**kwargs):
     logger.debug("Starting get_code_assessment_scores function")
     data = request.get_json()
+    logger.debug(f"Received data: {data}")
     candidate_id = data.get("candidate_id")
     level = data.get("job_level")
 
@@ -418,10 +424,10 @@ def get_code_assessment_scores():
 
                     code_assessment_scores_data = []
                     for i in range(3):
-                        assessment_id = generate_id()
+                        assessment_id = (uuid.uuid4())
                         problem_id = code_data[f"test_{i + 1}"]["ID"]
                         code_assessment_scores_data.append(
-                            (assessment_id, candidate_id, problem_id, 0, "", "", False)
+                            (str(assessment_id), candidate_id, problem_id, 0, "", "", False)
                         )
                         problem_data[problem_id] = {
                             "id": problem_id,
@@ -503,6 +509,7 @@ def get_code_assessment_scores():
                         "memory_limit_bytes": row[18],
                     }
 
+    
             cursor.execute(
                 """
                 SELECT COUNT(*)
@@ -1034,5 +1041,37 @@ def get_summary_cv_matching():
         }
     )
     
+@app.route("/get-summary-virtual-interview", methods=["POST"])
+@cross_origin()
+def get_summary_virtual_interview():
+    data = request.get_json()
+    candidate_id = data.get("candidate_id")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT 
+            vis.*, 
+            vad.* 
+        FROM 
+            virtual_interview_scores vis
+        LEFT JOIN 
+            video_analysis_data vad ON vis.analysis_id = vad.analysis_id
+        WHERE 
+            vis.candidate_id = ? AND vis.status = 1
+        """,
+        (candidate_id,)
+    )
+    interview_data = cursor.fetchall()
+
+    conn.close()
+
+    result = []
+    for row in interview_data:
+        result.append(dict(zip([column[0] for column in cursor.description], row)))
+
+    return jsonify(result)
 if __name__ == "__main__":
     app.run()

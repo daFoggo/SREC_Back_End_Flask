@@ -1,0 +1,287 @@
+
+      [pic]
+Alice Mary Ranjitham
+             #9A/3 Kabali St,
+salicemary@gmail.com
+                            Velachery, Contact Number : 9940158784
+                                                                Chennai –
+42.
+
+Professional Summary
+
+9+ yrs. of overall experience in software design,  development,  maintenance
+and  deployment  and  3+ years of  experience  in   design,   analysis   and
+development of the BPM driven applications.
+Experience with working in Websphere Lombardi Edition 7.2 and playing  as  a
+Technical Lead role in development. Also  worked  as  BPM  admin  in  shared
+service environment.
+Expertise in WLE 7.2 shared Process model and also a  part  of  COE.  Assist
+application teams with issues and deployments using Harvest Client.
+Experience in  handling  all  type  of  technical  and  environment  related
+issues.
+Experience with administering the  WLE  7.2  and  managing  Process  Server,
+Performance Server, Process and Performance DB. Also  having  experience  in
+managing process center repository.
+Experience  in  Managing  user  accounts,  installed   applications,   event
+manager, managing EPV etc., Monitoring shared  service  environment  in  all
+region and recycling the server based on requirement basis.
+Knowledge in Lombardi database tables.
+Experience on design and development in BPM such as BPD, coach,  Integration
+Services, UCA, IME, Exception Handling etc.,
+ Knowledge of industry best practices for Lombardi and contributed  in  code
+reviews for different BPM application to improve the performance.
+Work with IBM Support to assist in troubleshooting and resolving issues.
+Actively participating in DR test, Fix Pack installation  and  configuration
+changes.
+Involve estimations, requirement analysis and resource allocation.
+Do R&D to provide the optimal solutions for the technical challenges.
+Lead the deployments to each environment within the development lifecycle
+Lead daily scrum meetings and maintain good relationship with team.
+Well-developed problem solving skills  which  enables  to  quickly  identify
+problems, conceptualize solutions and carry them through to implementation.
+
+
+Work Experience
+
+i|Nautix Technologies, Chennai (Jun ’11 - till date) as Sr Application
+Developer.
+Tata Consultancy Services, Chennai (Oct ’07 – Jun’11) as Systems Engineer.
+Jeevan Technologies Pvt Ltd, Chennai (Nov ’06 – Oct’07) as Software
+Engineer.
+Interpress India Pvt ltd., Chennai  (June ‘04 to May ‘06) as Software
+Engineer.
+
+
+1 Technical skill set
+
+
+2
+
+
+3 Languages      Java.
+
+Web Technologies JSP-Servlet, JSF – Rich faces 3.0.
+Architecture           Struts 1.2, Hibernate 3.0.
+Server                 Tomcat 5.5, Web Sphere 7.0.
+IDE              RAD,RSA.
+
+4 RDBMS          Oracle 11g, SQL Server.
+
+Version Control  VSS, Clear Case, Harvest
+Platform         Windows, Unix, Linux
+Tools            CA Service Catalog, Service Desk, UAPM
+BPM Tool         Websphere Lombardi Edition 7.2
+
+Education
+
+M.C.A  - 85.9% with distinction (Madurai Kamaraj University)
+
+
+1 Certification
+
+
+Sun Certified Java Programmer.
+
+
+2 Awards
+
+
+Best Team Award
+Excellent Performance Award
+On the Spot Award
+
+
+
+
+
+3 Project Summary
+
+
+Project #1
+    Title  :Deal Onboarding
+    Client : BNYM
+
+Deal On-boarding program is a workflow application  to  facilitate  the  on-
+boarding of new business deals within Corporate Trust.
+ It replaces the existing RTI (Ready To Implement) and GBA (Global  Business
+Acceptance) Lotus Notes based applications currently  used  for  on-boarding
+new business deals. It has a complex workflow of combining both  RTI  &  GBA
+process and provides high degree of flexibility in  initiating  and  routing
+the deal request.
+Throughout the process, various parties like Sales,  Business  Managers  and
+Relationship Managers are involved. Each  of  them  add  data  to  the  deal
+information and provide necessary approvals/ reviews.
+ Based on the inputs given by various parties  at  each  level,  the  system
+calculates the rating (Red, Amber, Green) and then the deal  is  taken  into
+committee for decision. Each party will  be  notified  by  email  to  inform
+about the deal for which they have to act upon.
+  Responsibilities:
+Reporting progress  to  the  Project  Manager  and  Escalate  any  technical
+issues, roadblocks.
+Estimations of the iterative/sprint development process.
+Work with the project manager to support project plans and correct  resource
+and time allocation.
+Attending daily status call with onsite Manager and Business Manager.
+Lead the daily scrum meetings.
+Be responsible for the code being developed by the developers.
+Mentor the developers and Guide them to complete their assigned items.
+Conducting code reviews for the development team.
+Lead the deployments to each environment within the development lifecycle
+Do R&D to provide optimal solution for technical challenges
+Tools : WebSphere Lombardi 7.2, Oracle 11, Linux.
+
+
+
+
+Project #2
+    Title  : ES BPMS
+    Client : BNYM.
+ES BPMS is an Enterprise Solutions for  BPM  Shared  Service  in  BNYM.  The
+Enterprise Shared Service  environment  for  Lombardi  will  provide  shared
+hardware and software for business applications wishing to use the  Lombardi
+product within BNYM.
+ The Shared Services environment will allow LOBs to take  advantage  of  the
+Lombardi products without having to make a large investment in hardware  and
+software. The primary focus of this project is being to develop  BPM  Shared
+Service Environments, Create a process for onboarding in to the  BPM  shared
+service and establish a Center of Excellence for BPM.
+ The main responsibilities are Managing  Process  Server,  Managing  Process
+Center Repository, Performance  Server,  Managing  user  accounts,  managing
+installed applications,  Monitoring  Lombardi,  Maintaining  Lombardi  Event
+Manager, Managing Process Server  caches  and  databases,  Managing  exposed
+process values (EPVs). Also involved in code reviews etc.,.
+  Responsibilities: .
+Playing as WLE 7.2 architect role in shared service and also part of COE.
+Involved in handling all type of technical and environment related issues.
+Administering the WLE 7.2 and Managing Process Server,  Performance  Server,
+Process and Performance DB.  Also  having  experience  in  managing  process
+center repository.
+Managing user accounts, installed applications, event manager, managing  EPV
+etc.,
+Monitoring shared service environment  in  all  regions  and  recycling  the
+server based on requirement basis.
+Contributing in code reviews for different BPM application  to  improve  the
+performance.
+Assist application teams with issues and deployments
+Work with IBM Support to assist in troubleshooting and resolving issues.
+Actively participating in DR test, Fix Pack installation  and  configuration
+changes.
+Involved  in  BPM  designing,  development,  testing   and   implementation.
+Automated the Health Check Process, Instance Report,  to  find  unauthorized
+process application in Process Center using WLE.
+Tools : WebSphere Lombardi 7.2, Oracle 11, Red hat Linux.
+
+Project #3
+    Title  : Global AM Order Processing Tool(GAMOPT)
+    Client : Tata Communications, Montreal, Canada.
+GAMOPT is a single defined process for access management  across  the  globe
+for TATA Communications Limited. The AM automation process  has  two  parts,
+Approval and Fulfillment.
+The Approval process is where the access form is submitted by the  requester
+in the Service catalog. The Approvers of the access form is  identified  and
+mails are sent to the approvers with the link to their  Approval  work  list
+in the mail. Once the  all  work  list  task  is  completed  (Approved)  and
+finally the request is approved by all the approvers, the  request  triggers
+the Service desk to create required change orders and they are sent  to  the
+fulfillment
+Each  change  order  created  by  the  Service  desk  is  assign  with   the
+fulfillment groups. Once the fulfillment  is  done  (providing  access)  the
+fulfillment group member has to clear the task from the work  list.  Thus  a
+mail is sent to the requester telling that the access is  provided  and  the
+status of the request is changed to complete in the service catalog.
+Responsibility: Involving support activities.
+Tools : CA Service Catalog, Service Desk, UAPM, SQL Server
+Project #4
+    Title  : Primeway Account Review(PAR)
+    Client : IPB- LTSB Geneva.
+Primeway SA is a Swiss  company  owned  by  Lloyds  Bank  London  (UK).  The
+business  of  this  company  is  the  Offshore  Companies'  management   for
+international customers of Lloyds Bank IPB.
+Once a year, all details concerning the company  (owners,  assets)  and  the
+results of the revenues and  charges  (expenses)  of  the  Primeway  account
+managers have to perform a review of each company they are  responsible  for
+this review verifies current year. The printed documents  are  for  internal
+use only (legal dept.).
+Responsibility:  Involved  in  Analysis,  POC,  designed,  build  phase  And
+coordinated 3 members team.
+Software : JSF Richfaces3.0,EJB3,Hibernate.SQL Server
+
+
+
+Project #5
+    Title  : Credit and Securities (CAS)
+    Client : Lloyds TSB- UK.
+Credit and Security (CaS) workflow  system  will  enable  the  creation  and
+maintenance of Corporate Markets core credit data i.e. limits and  security.
+This forms part of the regulatory driven  Advanced  Internal  Ratings  Based
+(AIRB) programme.
+The CAS system provides the user the ability to  capture  and  reuse  credit
+data from origination activities  through  to  sanctioning.  CaS  is  a  key
+component of AIRB Programme of  Corporate  Markets  (CM).  Specifically,  in
+order to calculate Risk Weighted Asset (RWA) it is  necessary  to  know  the
+full on and off balance sheet commitment for each sanctioned  credit  limit.
+This requires the ability to link facility limits to exposures in  order  to
+calculate the  undrawn  /  unutilized  portion  and  the  appropriate  Basel
+treatment for EAD (Exposure at Default).
+Responsibility: Involved in Coding and Unit Testing.
+Software : Struts 1.2, Validator  Framework,  Web  sphere  6.0,  RSA,  Clear
+case.
+
+Project #5
+    Title :  Starlight –Wrappers
+    Client : Lloyds TSB - UK.
+The standard out of the box approach to deploying  a  Chordiant  application
+means that all functionality (i.e. business processes) has to be built  into
+a single application making  all  projects  delivering  processes  into  the
+desktop co-dependent on a single deployment package.
+Lloyds TSB want to break this “constraint” and instead wants to be  able  to
+build and deploy groups of business processes separately and  “launch”  them
+from the Foundation Desktop. 
+Therefore, Lloyds TSB needs to develop  a  launch  architecture  which  will
+both allow the separation of the architecture but still allow us to use  all
+the out of the box functions.
+One of the key areas of the launch architecture is the “wrapping” up  of  an
+externally supplied process. Standard Chordiant business processes  will  be
+delivered by different teams (FDI-Starlight & LTSB-Starlight) working  under
+common Starlight program.
+ Responsibility : Involved in development and Testing.
+Software : Chordiant Framework, Wepsphere 6.0, Oracle 10g, RAD,  Clearcase..
+
+
+Project #6
+    Title  : Document online Collaborator
+    Client : H & R Block
+Document Online  Collaborator  (DOC)  application  is  a  web  based  online
+application that allows users to create,  edit  and  share  word  processing
+documents and spreadsheets in real time by inviting people to  make  changes
+together,  at  the  same  time.  Versioning  control  of  the  document   is
+maintained by the application and is hidden to the users. So that user  need
+not worry about knowing configuration management functionalities  to  use  a
+document.
+Software : Struts1.2, Tomcat 5.5, oracle10g
+
+Project #8
+    Title :  Corporate Information Management System –Purchase and Stores
+    Client : The Daily Thanthi, Chennai.
+The Corporate Information Management System was developed for the  newspaper
+industry. Purchase and Stores is one of the  modules  in  this  application.
+Indenting is the major process that triggers  all  other  processes  in  the
+module. Indent should be  forwarded  to  central  since  sole  authority  of
+purchasing materials  is  with  the  central  stores.  After  purchase,  the
+materials sent along with gate pass to  the  branches.  The  branch  manager
+sent the goods receipt note to the central branch.
+ Responsibility : Involved development and testing for  Purchase and  Stores
+module.
+Software : JSP, Servlet, Oracle 8i.
+
+Personal Details
+Date of Birth                           07 – 04 – 1980.
+Spouse Name            Mr. K.Vinesh Martin
+Languages known        English, Tamil.
+Passport No                 F7008540.
+Permanent Address      3/187,Pillaiyar Koil Street, Avaraikulam, Post,
+                           Nellai District -627105,Tamil Nadu. India.
+-----------------------
+7
+
+

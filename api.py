@@ -18,18 +18,17 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
-
-from junior_get_code import junior_get_code
-from middle_get_code import middle_get_code
-from senior_get_code import senior_get_code
 from flask_mail import Mail, Message
+
 from extract_cv import extract_cv
+from get_jobs import get_jobs
+
 from junior_get_code import junior_get_code
 from middle_get_code import middle_get_code
 from senior_get_code import senior_get_code
 from coding_conventions_checker import get_error, coding_conventions_checker
-from get_interview_questions import get_interview_questions
 
+from get_interview_questions import get_interview_questions
 from core_answer_matching import answer_matching
 from virtual_interview_analyze import prediction
 
@@ -48,7 +47,6 @@ jwt = JWTManager(app)
 CORS(app, resources={r"*": {"origins": "*"}})
 
 mail = Mail(app)
-
 
 def get_db_connection():
     conn = sqlite3.connect("./databases/srec.db")
@@ -192,14 +190,6 @@ logger = logging.getLogger(__name__)
 assessment_lock = Lock()
 
 # CV-matching module
-@app.route("/job-descriptions", methods=["GET"])
-@cross_origin()
-def job_descriptions():
-    with open("./static/job_descriptions/job_description.json", "r") as f:
-        job_description = json.load(f)
-    return jsonify(job_description), 200
-
-
 def generate_password():
     alphabet = string.ascii_letters + string.digits + string.punctuation
     password = "".join(secrets.choice(alphabet) for i in range(12))
@@ -225,33 +215,62 @@ def generate_candidate_id():
 
     return f"CDD{count + 1}"
 
-@app.route("/cvs-matching", methods=["POST", "GET"])
+
+@app.route('/get-jobs', methods = ['GET'])
+@cross_origin()
+def get_job():
+    result = get_jobs()
+    return jsonify(result), 200
+
+@app.route("/get-ranked-candidates", methods=["POST", "GET"])
 @cross_origin()
 def cvs_matching():
-    id = request.get_json()["id"]
-    with open(
-        "./static/job_descriptions/job_description.json", "r", encoding="utf-8"
-    ) as file:
-        jobs_data = json.load(file)
-    for i in range(len(jobs_data)):
-        job = dict(jobs_data[i])
-        if job["id"] == id:
-            requested_job = job
-            jds_description = "./static/job_descriptions/job_description.txt"
-            with open(jds_description, "w") as file:
-                file.write(requested_job["description"])
-            cvs_path = "./static/cvs/"
-            candidates, categories, job_data = extract_cv(
-                input_directory=cvs_path, job_directory=jds_description
-            )
-            for category in categories:
-                requested_job[category] = job_data[category]
-            jobs_data[i] = requested_job
-    with open(
-        "./static/job_descriptions/job_description.json", "w", encoding="utf-8"
-    ) as file:
-        json.dump(jobs_data, file)
-    return jsonify(candidates), 200
+    id = request.get_json().get('id')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT job_path FROM jobs WHERE id = ?', (id,))
+    job_path = cursor.fetchall()[0][0]
+
+    data_path = os.path.join(job_path, 'ranked_candidates.json')
+    if not os.path.isfile(data_path):
+        candidates = extract_cv(job_path, id)
+        with open(os.path.join(job_path, 'ranked_candidates.json'), 'w', encoding = 'utf-8') as file:
+            json.dump(candidates, file)
+    with open(data_path, 'r') as file:
+        data = json.load(file)
+        conn.close()
+        return jsonify(data), 200
+    conn.close()
+    return jsonify({'error': "Not found data"}), 425
+
+@app.route("/update-cvs", methods = ['POST'])
+@cross_origin()
+def update_cvs():
+    id = request.get_json().get('id')
+    files = request.files.getlist('file')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT job_path FROM jobs WHERE id = ?', (id,))
+    job_path = cursor.fetchall()[0][0]
+    update_path = os.path.join(os.path.abspath('__file__'), f'update_cvs_for_{id}')
+    if not os.path.exists(update_path):
+       os.makedirs(update_path)
+    for file in files:
+        file.save(job_path)
+        file.save(update_path) 
+    update_candidates = extract_cv(update_path, id)
+    with open(os.path.join(job_path, 'ranked_candidates.json'), 'r') as file:
+        candidates = json.load(file)
+        candidates.append(update_candidates)
+        with open(os.path.join(job_path, 'ranked_candidates.json'), 'w') as f:
+            json.dump(candidates, f)
+    conn.close()
+    os.remove(update_path)
+    return 'success'
 
 
 @app.route("/generate-account-and-send-email", methods=["POST"])

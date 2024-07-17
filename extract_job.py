@@ -2,6 +2,7 @@ import os
 import docx
 import json
 import openai
+import sqlite3
 from langchain.prompts import PromptTemplate
 from langchain.output_parsers import ResponseSchema
 from langchain.output_parsers import StructuredOutputParser
@@ -10,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def extract_job(directory):
+def extract_job(text):
     client = openai.OpenAI()
     os.environ['OPENAI_API_KEY'] = os.getenv("OPENAI_KEY")
     openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -69,14 +70,6 @@ def extract_job(directory):
     
     conversation_metadata_prompt_template = PromptTemplate.from_template(template=conversation_metadata_prompt_template_str)
 
-    loader = TextLoader(directory)
-    pages = loader.load_and_split()
-    name_query = pages[0].page_content
-    raw_texts = []
-    for raw_text in name_query.split('\n'):
-        raw_texts.append(raw_text.strip().lower())
-    text = '\n'.join(raw_texts)
-
     messages =  [{"role": "user", "content": text}]
     # init prompt
     conversation_metadata_recognition_prompt = (
@@ -104,7 +97,7 @@ def extract_job(directory):
                 job_data.update({category: segment})
                 job_data_string.append(f'{category}: {segment}')
     job.update({conversation_metadata_detected['name']: job_data})
-    # with open('./static/job_descriptions/job_description.json', 'w', encoding = 'utf-8') as f:
-    #     json.dump(job, f, ensure_ascii= True)
+
+    
     job_data_string = '; '.join(job_data_string)
-    return {conversation_metadata_detected['name']: job_data_string}, job_data, categories
+    return job_data_string, job_data, categories

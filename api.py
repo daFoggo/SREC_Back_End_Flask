@@ -424,7 +424,7 @@ def get_code_assessment_scores(**kwargs):
 
                     code_assessment_scores_data = []
                     for i in range(3):
-                        assessment_id = (uuid.uuid4())
+                        assessment_id = str(uuid.uuid4())
                         problem_id = code_data[f"test_{i + 1}"]["ID"]
                         code_assessment_scores_data.append(
                             (str(assessment_id), candidate_id, problem_id, 0, "", "", False)

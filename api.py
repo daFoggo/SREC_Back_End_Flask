@@ -48,6 +48,7 @@ CORS(app, resources={r"*": {"origins": "*"}})
 
 mail = Mail(app)
 
+
 def get_db_connection():
     conn = sqlite3.connect("./databases/srec.db")
     conn.row_factory = sqlite3.Row
@@ -93,12 +94,13 @@ def get_db_connection():
 #         return jsonify({"msg": "Candidate registered successfully"}), 200
 
 
-@app.route("/login", methods=["POST"])
+@app.route("/login/recruiter", methods=["POST"])
 @cross_origin()
-def login():
+def login_recruiter():
     data = request.get_json()
     user_name = data.get("userName")
     password = data.get("password")
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -110,45 +112,59 @@ def login():
         (user_name,),
     )
     user = cursor.fetchone()
-
-    if not user:
-        cursor.execute(
-            """
-            SELECT * FROM candidates
-            WHERE user_name = ?
-            """,
-            (user_name,),
-        )
-        user = cursor.fetchone()
-
     conn.close()
 
     if user and user["password"] == password:
         current_time = datetime.utcnow()
-        if user["role"] == "recruiter":
-            access_token = create_access_token(
-                identity={
-                    "id": user["recruiter_id"],
-                    "user_name": user["user_name"],
-                    "role": user["role"],
-                    "full_name": user["full_name"],
-                    "current_time": current_time,
-                }
-            )
-        else:
-            access_token = create_access_token(
-                identity={
-                    "id": user["candidate_id"],
-                    "user_name": user["user_name"],
-                    "role": user["role"],
-                    "job_level": user["level"].lower(),
-                    "full_name": user["full_name"],
-                    "current_time": current_time,
-                }
-            )
+        access_token = create_access_token(
+            identity={
+                "id": user["recruiter_id"],
+                "user_name": user["user_name"],
+                "role": "recruiter",
+                "full_name": user["full_name"],
+                "current_time": current_time,
+            }
+        )
         return jsonify(access_token=access_token), 200
     else:
-        return jsonify({"msg": "Invalid email or password"}), 401
+        return jsonify({"msg": "Invalid username or password"}), 401
+
+
+@app.route("/login/candidate", methods=["POST"])
+@cross_origin()
+def login_candidate():
+    data = request.get_json()
+    user_name = data.get("userName")
+    password = data.get("password")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT * FROM candidates
+        WHERE user_name = ?
+        """,
+        (user_name,),
+    )
+    user = cursor.fetchone()
+    conn.close()
+
+    if user and user["password"] == password:
+        current_time = datetime.utcnow()
+        access_token = create_access_token(
+            identity={
+                "id": user["candidate_id"],
+                "user_name": user["user_name"],
+                "role": "candidate",
+                "job_level": user["level"].lower(),
+                "full_name": user["full_name"],
+                "current_time": current_time,
+            }
+        )
+        return jsonify(access_token=access_token), 200
+    else:
+        return jsonify({"msg": "Invalid username or password"}), 401
 
 
 @app.route("/logout", methods=["POST"])
@@ -174,6 +190,7 @@ def role_required(role):
 
     return wrapper
 
+
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -188,6 +205,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 assessment_lock = Lock()
+
 
 # CV-matching module
 def generate_password():
@@ -216,61 +234,65 @@ def generate_candidate_id():
     return f"CDD{count + 1}"
 
 
-@app.route('/get-jobs', methods = ['GET'])
+@app.route("/get-jobs", methods=["GET"])
 @cross_origin()
 def get_job():
     result = get_jobs()
     return jsonify(result), 200
 
+
 @app.route("/get-ranked-candidates", methods=["POST", "GET"])
 @cross_origin()
 def cvs_matching():
-    id = request.get_json().get('id')
-    
+    id = request.get_json().get("id")
+
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    cursor.execute('SELECT job_path FROM jobs WHERE id = ?', (id,))
+
+    cursor.execute("SELECT job_path FROM jobs WHERE id = ?", (id,))
     job_path = cursor.fetchall()[0][0]
 
-    data_path = os.path.join(job_path, 'ranked_candidates.json')
+    data_path = os.path.join(job_path, "ranked_candidates.json")
     if not os.path.isfile(data_path):
         candidates = extract_cv(job_path, id)
-        with open(os.path.join(job_path, 'ranked_candidates.json'), 'w', encoding = 'utf-8') as file:
+        with open(
+            os.path.join(job_path, "ranked_candidates.json"), "w", encoding="utf-8"
+        ) as file:
             json.dump(candidates, file)
-    with open(data_path, 'r') as file:
+    with open(data_path, "r") as file:
         data = json.load(file)
         conn.close()
         return jsonify(data), 200
     conn.close()
-    return jsonify({'error': "Not found data"}), 425
+    return jsonify({"error": "Not found data"}), 425
 
-@app.route("/update-cvs", methods = ['POST'])
+
+@app.route("/update-cvs", methods=["POST"])
 @cross_origin()
 def update_cvs():
-    id = request.get_json().get('id')
-    files = request.files.getlist('file')
-    
+    id = request.get_json().get("id")
+    files = request.files.getlist("file")
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute('SELECT job_path FROM jobs WHERE id = ?', (id,))
+    cursor.execute("SELECT job_path FROM jobs WHERE id = ?", (id,))
     job_path = cursor.fetchall()[0][0]
-    update_path = os.path.join(os.path.abspath('__file__'), f'update_cvs_for_{id}')
+    update_path = os.path.join(os.path.abspath("__file__"), f"update_cvs_for_{id}")
     if not os.path.exists(update_path):
-       os.makedirs(update_path)
+        os.makedirs(update_path)
     for file in files:
         file.save(job_path)
-        file.save(update_path) 
+        file.save(update_path)
     update_candidates = extract_cv(update_path, id)
-    with open(os.path.join(job_path, 'ranked_candidates.json'), 'r') as file:
+    with open(os.path.join(job_path, "ranked_candidates.json"), "r") as file:
         candidates = json.load(file)
         candidates.append(update_candidates)
-        with open(os.path.join(job_path, 'ranked_candidates.json'), 'w') as f:
+        with open(os.path.join(job_path, "ranked_candidates.json"), "w") as f:
             json.dump(candidates, f)
     conn.close()
     os.remove(update_path)
-    return 'success'
+    return "success"
 
 
 @app.route("/generate-account-and-send-email", methods=["POST"])
@@ -280,6 +302,7 @@ def generate_account_and_send_email():
     candidates = data.get("candidates", [])
     recruiter_id = data.get("recruiter_id")
     job_id = data.get("job_id")
+    job_level = data.get("job_level")
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -289,8 +312,7 @@ def generate_account_and_send_email():
             full_name = candidate.get("name")
             email = candidate.get("gmail")
             role = "candidate"
-            level = candidate.get("level")
-
+            level = job_level
 
             user_name = generate_username(full_name, email)
             password = generate_password()
@@ -310,16 +332,18 @@ def generate_account_and_send_email():
                     level,
                 ),
             )
-            cursor.execute("SELECT candidate_id FROM candidates WHERE email = ?", (email,))
+            cursor.execute(
+                "SELECT candidate_id FROM candidates WHERE email = ?", (email,)
+            )
             candidate_id = cursor.fetchone()[0]
 
-            link_id = str(uuid.uuid4())  
+            link_id = str(uuid.uuid4())
             cursor.execute(
                 """
                 SELECT COUNT(*) FROM link_recruiter_with_candidate
                 WHERE recruiter_id = ? AND candidate_id = ? AND job_id = ?
                 """,
-                (recruiter_id, candidate_id, job_id)
+                (recruiter_id, candidate_id, job_id),
             )
             result = cursor.fetchone()
 
@@ -330,12 +354,12 @@ def generate_account_and_send_email():
                     INSERT INTO link_recruiter_with_candidate (link_id, recruiter_id, candidate_id, job_id)
                     VALUES (?, ?, ?, ?)
                     """,
-                    (link_id, recruiter_id, candidate_id, job_id)
+                    (link_id, recruiter_id, candidate_id, job_id),
                 )
                 conn.commit()
-            
+
             conn.commit()
-            
+
             matching_id = str(uuid.uuid4())
             matching_score = candidate.get("matching_score")
             cursor.execute(
@@ -343,11 +367,10 @@ def generate_account_and_send_email():
                 INSERT OR REPLACE INTO cv_matching_scores (matching_id, candidate_id, job_id, matching_score)
                 VALUES (?, ?, ?, ?)
                 """,
-                (matching_id, candidate_id, job_id, matching_score)
+                (matching_id, candidate_id, job_id, matching_score),
             )
 
             conn.commit()
-
 
             msg = Message(
                 "Your Account Information",
@@ -361,7 +384,9 @@ def generate_account_and_send_email():
 
         return (
             jsonify(
-                {"msg": "Candidates accounts created successfully, linked with recruiter, and emails sent"}
+                {
+                    "msg": "Candidates accounts created successfully, linked with recruiter, and emails sent"
+                }
             ),
             200,
         )
@@ -374,6 +399,7 @@ def generate_account_and_send_email():
         conn.rollback()
         conn.close()
         return jsonify({"msg": f"Unexpected error: {str(e)}"}), 500
+
 
 # Code assessment module
 @app.route("/get-code-assessment-scores", methods=["POST"])
@@ -441,7 +467,15 @@ def get_code_assessment_scores(**kwargs):
                         assessment_id = str(uuid.uuid4())
                         problem_id = code_data[f"test_{i + 1}"]["ID"]
                         code_assessment_scores_data.append(
-                            (str(assessment_id), candidate_id, problem_id, 0, "", "", False)
+                            (
+                                str(assessment_id),
+                                candidate_id,
+                                problem_id,
+                                0,
+                                "",
+                                "",
+                                False,
+                            )
                         )
                         problem_data[problem_id] = {
                             "id": problem_id,
@@ -523,7 +557,6 @@ def get_code_assessment_scores(**kwargs):
                         "memory_limit_bytes": row[18],
                     }
 
-    
             cursor.execute(
                 """
                 SELECT COUNT(*)
@@ -632,6 +665,7 @@ def submit_code_assessment_scores():
 
     return jsonify({"msg": "Update successful"}), 200
 
+
 @app.route("/get-final-code-score", methods=["POST"])
 @cross_origin()
 def get_final_code_score():
@@ -674,10 +708,13 @@ def get_final_code_score():
 
     finally:
         conn.close()
-        
+
+
 # Virtual-Interview-Module
 
 interview_lock = Lock()
+
+
 @app.route("/get-virtual-interview-scores", methods=["POST", "GET"])
 @cross_origin()
 def get_virtual_interview_scores():
@@ -694,7 +731,7 @@ def get_virtual_interview_scores():
     question_data = {
         "basic_questions": [],
         "behavioral_questions": [],
-        "salary_questions": []
+        "salary_questions": [],
     }
     current_question_index = 0
 
@@ -709,7 +746,9 @@ def get_virtual_interview_scores():
                 (candidate_id,),
             )
             count = cursor.fetchone()[0]
-            logger.debug(f"Found {count} existing records for candidate_id: {candidate_id}")
+            logger.debug(
+                f"Found {count} existing records for candidate_id: {candidate_id}"
+            )
 
             if count == 0:
                 logger.debug("No existing records found, creating new interview")
@@ -726,11 +765,21 @@ def get_virtual_interview_scores():
                         for question in fetched_question_data[category]:
                             interview_id = str(uuid.uuid4())
                             virtual_interview_scores_data.append(
-                                (interview_id, candidate_id, question["id"], "", "", "", False)
+                                (
+                                    interview_id,
+                                    candidate_id,
+                                    question["id"],
+                                    "",
+                                    "",
+                                    "",
+                                    False,
+                                )
                             )
                             question_data[category].append(question)
 
-                logger.debug(f"Prepared {len(virtual_interview_scores_data)} records for insertion")
+                logger.debug(
+                    f"Prepared {len(virtual_interview_scores_data)} records for insertion"
+                )
 
                 if virtual_interview_scores_data:
                     cursor.executemany(
@@ -743,7 +792,9 @@ def get_virtual_interview_scores():
                     )
 
                     conn.commit()
-                    logger.debug(f"Inserted {len(virtual_interview_scores_data)} new records")
+                    logger.debug(
+                        f"Inserted {len(virtual_interview_scores_data)} new records"
+                    )
                 else:
                     logger.error("No interview scores data prepared for insertion")
 
@@ -792,7 +843,7 @@ def get_virtual_interview_scores():
                         FROM question_data
                         WHERE question_id = ?
                         """,
-                        (row[2],)
+                        (row[2],),
                     )
                     logger.debug(f"Fetching question data for question_id: {row[2]}")
                     question = cursor.fetchone()
@@ -844,17 +895,21 @@ def get_virtual_interview_scores():
         finally:
             conn.close()
 
-    logger.debug(f"Preparing response with {len(interview_data)} interview data entries")
+    logger.debug(
+        f"Preparing response with {len(interview_data)} interview data entries"
+    )
 
     response_data = {
         "question_data": question_data,
         "current_question_index": current_question_index,
-        "interview_data": interview_data
+        "interview_data": interview_data,
     }
 
     return jsonify(response_data), 200
 
+
 import traceback
+
 
 def b64_to_file(base64_string, filename, folder="./static/recorded_videos"):
     try:
@@ -867,6 +922,7 @@ def b64_to_file(base64_string, filename, folder="./static/recorded_videos"):
     except Exception as e:
         print(f"Error saving video file: {e}")
         return None
+
 
 @app.route("/submit-virtual-interview-scores", methods=["PUT"])
 @cross_origin()
@@ -881,7 +937,11 @@ def submit_virtual_interview_scores():
     if candidate_id is None or status is None:
         return jsonify({"msg": "Data insufficiency"}), 400
 
-    pathFile = b64_to_file(video_data, f"{candidate_id}_{current_question_index}_capture.mp4", folder="./static/recorded_videos")
+    pathFile = b64_to_file(
+        video_data,
+        f"{candidate_id}_{current_question_index}_capture.mp4",
+        folder="./static/recorded_videos",
+    )
     if pathFile is None:
         return jsonify({"msg": "Failed to save video file"}), 500
 
@@ -895,7 +955,7 @@ def submit_virtual_interview_scores():
             SET video_path = ?, status = ?
             WHERE interview_id = ?
             """,
-            (pathFile, status, interview_id)
+            (pathFile, status, interview_id),
         )
         conn.commit()
         return jsonify({"msg": "Interview score submitted successfully"}), 200
@@ -910,14 +970,15 @@ def submit_virtual_interview_scores():
         if conn:
             conn.close()
 
-        
+
 @app.route("/get-interview-questions")
 @cross_origin()
 def get_interview_questions_route():
     questions = get_interview_questions()
     return questions
 
-@app.route('/virtual-interview-analyze', methods=['POST', 'GET'])
+
+@app.route("/virtual-interview-analyze", methods=["POST", "GET"])
 def analyze():
     conn = None
     try:
@@ -928,8 +989,8 @@ def analyze():
         question_id = data.get("question_id")
 
         if not interview_id or not question_id:
-            return jsonify({'error': 'interview_id and question_id are required'}), 400
-        
+            return jsonify({"error": "interview_id and question_id are required"}), 400
+
         filepath = f"./static/recorded_videos/{candidate_id}_{current_question_index}_capture.mp4"
         logger.debug(f"Analyzing video file: {filepath}")
         conn = get_db_connection()
@@ -940,17 +1001,16 @@ def analyze():
             SELECT answer
             FROM question_data
             WHERE question_id = ?
-            """, 
-            (question_id,)
+            """,
+            (question_id,),
         )
-        
+
         core_answer_row = cursor.fetchone()
         if not core_answer_row:
-            return jsonify({'error': 'Invalid question_id provided'}), 400
-        
-        core_answer = core_answer_row['answer']
-        
-        
+            return jsonify({"error": "Invalid question_id provided"}), 400
+
+        core_answer = core_answer_row["answer"]
+
         analyze_result = prediction(filepath)
         analyze_result_json = json.dumps(analyze_result)
         cosine_sim = answer_matching(filepath, core_answer)
@@ -962,7 +1022,7 @@ def analyze():
             INSERT INTO video_analysis_data (analysis_id, prediction_data, answer_matching_data)
             VALUES (?, ?, ?)
             """,
-            (id, analyze_result_json, cosine_sim)
+            (id, analyze_result_json, cosine_sim),
         )
 
         cursor.execute(
@@ -971,20 +1031,21 @@ def analyze():
             SET analysis_id = ?
             WHERE interview_id = ?
             """,
-            (id, interview_id)
+            (id, interview_id),
         )
 
         conn.commit()
 
-        return jsonify({'msg': "Inserted data successfully"}), 200
+        return jsonify({"msg": "Inserted data successfully"}), 200
 
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'error': f'Unable to analyze the video: {str(e)}'}), 420
+        return jsonify({"error": f"Unable to analyze the video: {str(e)}"}), 420
     finally:
         if conn:
             conn.close()
+
 
 # Summary module
 @app.route("/get-recruiter-with-candidates", methods=["POST"])
@@ -1014,6 +1075,7 @@ def get_recruiter_with_candidates():
 
     return jsonify(candidates), 200
 
+
 @app.route("/get-summary-cv-matching", methods=["POST"])
 @cross_origin()
 def get_summary_cv_matching():
@@ -1023,38 +1085,37 @@ def get_summary_cv_matching():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute(
         """
         SELECT matching_score FROM cv_matching_scores
         WHERE candidate_id = ? AND job_id = ?
         """,
-        (candidate_id, job_id)
+        (candidate_id, job_id),
     )
     matching_score = cursor.fetchone()
-    
 
     cursor.execute(
         """
         SELECT * FROM candidates
         WHERE candidate_id = ?
         """,
-        (candidate_id,)
+        (candidate_id,),
     )
     candidate_data = cursor.fetchone()
 
     conn.close()
-    
-    matching_score_dict = {"matching_score": matching_score[0]} if matching_score else None
+
+    matching_score_dict = (
+        {"matching_score": matching_score[0]} if matching_score else None
+    )
     candidate_data_dict = dict(candidate_data) if candidate_data else None
 
     return jsonify(
-        {
-            "matching_score": matching_score_dict,
-            "candidate_data": candidate_data_dict
-        }
+        {"matching_score": matching_score_dict, "candidate_data": candidate_data_dict}
     )
-    
+
+
 @app.route("/get-summary-virtual-interview", methods=["POST"])
 @cross_origin()
 def get_summary_virtual_interview():
@@ -1076,7 +1137,7 @@ def get_summary_virtual_interview():
         WHERE 
             vis.candidate_id = ? AND vis.status = 1
         """,
-        (candidate_id,)
+        (candidate_id,),
     )
     interview_data = cursor.fetchall()
 
@@ -1087,5 +1148,7 @@ def get_summary_virtual_interview():
         result.append(dict(zip([column[0] for column in cursor.description], row)))
 
     return jsonify(result)
+
+
 if __name__ == "__main__":
     app.run()

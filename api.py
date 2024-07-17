@@ -356,11 +356,6 @@ def generate_account_and_send_email():
         conn.close()
         return jsonify({"msg": f"Unexpected error: {str(e)}"}), 500
 
-@app.route("/test", methods=["GET"])
-@cross_origin()
-def test():
-    return jsonify({"msg": "Test successful"}), 200
-
 # Code assessment module
 @app.route("/get-code-assessment-scores", methods=["POST"])
 @cross_origin()

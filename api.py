@@ -36,9 +36,13 @@ from get_interview_questions import get_interview_questions
 from core_answer_matching import answer_matching
 from virtual_interview_analyze import prediction
 
+# response fix
+from flask import Response
+
 load_dotenv()
 
 app = Flask(__name__)
+app.json.sort_keys = False
 
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
 app.config["MAIL_PORT"] = 465
@@ -174,6 +178,7 @@ def login_candidate():
 @app.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
+    
     return jsonify({"msg": "User logged out successfully"}), 200
 
 
@@ -428,7 +433,7 @@ def generate_account_and_send_email():
                 conn.commit()
 
             matching_id = str(uuid.uuid4())
-            matching_score = candidate.get("matching_score")
+            matching_score = (candidate.get("cv_matching") * 100)
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO cv_matching_scores 
@@ -615,8 +620,10 @@ def get_code_assessment_scores(**kwargs):
                     (candidate_id,),
                 )
                 existing_data = cursor.fetchall()
+                print(existing_data)
 
-                for row in existing_data:
+                for index,row in enumerate(existing_data):
+                    print(row[2])
                     assessment_data.append(
                         {
                             "assessment_id": row[0],
@@ -628,7 +635,7 @@ def get_code_assessment_scores(**kwargs):
                             "status": row[6],
                         }
                     )
-                    problem_data[row[2]] = {
+                    problem_data[f'{index}_{row[2]}'] = {
                         "id": row[7],
                         "source": row[8],
                         "name": row[9],
@@ -680,14 +687,11 @@ def get_code_assessment_scores(**kwargs):
     logger.debug(
         f"Returning response with {len(assessment_data)} assessment data entries"
     )
+    print(problem_data.keys())
     return (
-        jsonify(
-            {
-                "assessment_data": assessment_data,
+        jsonify({"assessment_data": assessment_data,
                 "current_problem_index": current_problem_index,
-                "problem_data": problem_data,
-            }
-        ),
+                "problem_data": problem_data}),
         200,
     )
 

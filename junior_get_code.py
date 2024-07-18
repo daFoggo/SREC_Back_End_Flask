@@ -34,6 +34,7 @@ def junior_get_code():
             "second": test_1[9],
             "nano": test_1[10],
             "memory_limit_bytes": test_1[11],
+            "flag": 1,
         },
         "test_2": {
             "ID": test_2[0],
@@ -48,6 +49,7 @@ def junior_get_code():
             "second": test_2[9],
             "nano": test_2[10],
             "memory_limit_bytes": test_2[11],
+            "flag": 2
         },
         "test_3": {
             "ID": test_3[0],
@@ -62,6 +64,7 @@ def junior_get_code():
             "second": test_3[9],
             "nano": test_3[10],
             "memory_limit_bytes": test_3[11],
+            "flag": 3
         },
     }
 

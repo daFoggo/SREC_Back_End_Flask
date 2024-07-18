@@ -1,0 +1,20 @@
+{
+    "voice_prediction": {
+        "emotion_prediction": {
+            "sleepy": 86,
+            "neutral": 0,
+            "happy": 0,
+            "angry": 0,
+            "disgusted": 0,
+            "fear": 14,
+            "surprise": 0
+        },
+        "fluency_prediction": {
+            "Low": 43,
+            "Intermediate": 14,
+            "High": 43
+        },
+        "pronunciation_score": 50.0
+    },
+    "video_prediction": []
+}

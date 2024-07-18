@@ -6,6 +6,10 @@ import string
 import secrets
 import uuid
 import base64
+import joblib
+import numpy as np
+from functools import lru_cache
+
 from flask import Flask, request, jsonify, make_response
 from flask_jwt_extended import (
     JWTManager,
@@ -295,6 +299,13 @@ def update_cvs():
     return "success"
 
 
+from flask import jsonify, request, render_template_string
+from flask_mail import Message
+from flask_cors import cross_origin
+import sqlite3
+import uuid
+
+
 @app.route("/generate-account-and-send-email", methods=["POST"])
 @cross_origin()
 def generate_account_and_send_email():
@@ -307,19 +318,75 @@ def generate_account_and_send_email():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    email_template = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your Account Information</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+            h1 {
+                color: #4a4a4a;
+            }
+            .credentials {
+                background-color: #f9f9f9;
+                padding: 10px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+            .footer {
+                margin-top: 20px;
+                font-size: 0.9em;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Welcome to SREC</h1>
+            <p>Dear {full_name},</p>
+            <p>Your account has been successfully created. Below are your login credentials:</p>
+            <div class="credentials">
+                <p><strong>Username:</strong> {user_name}</p>
+                <p><strong>Password:</strong> {password}</p>
+            </div>
+            <p>Please keep this information safe and change your password upon your first login.</p>
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            <p>Best regards,<br>SREC Team</p>
+            <div class="footer">
+                <p>This is an automated message, please do not reply directly to this email.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
     try:
         for candidate in candidates:
             full_name = candidate.get("name")
             email = candidate.get("gmail")
             role = "candidate"
             level = job_level
-
             user_name = generate_username(full_name, email)
             password = generate_password()
 
             cursor.execute(
                 """
-                INSERT INTO candidates (candidate_id, full_name, email, user_name, password, role, level)
+                INSERT INTO candidates 
+                (candidate_id, full_name, email, user_name, password, role, level)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -332,15 +399,16 @@ def generate_account_and_send_email():
                     level,
                 ),
             )
+
             cursor.execute(
                 "SELECT candidate_id FROM candidates WHERE email = ?", (email,)
             )
             candidate_id = cursor.fetchone()[0]
 
-            link_id = str(uuid.uuid4())
             cursor.execute(
                 """
-                SELECT COUNT(*) FROM link_recruiter_with_candidate
+                SELECT COUNT(*) 
+                FROM link_recruiter_with_candidate 
                 WHERE recruiter_id = ? AND candidate_id = ? AND job_id = ?
                 """,
                 (recruiter_id, candidate_id, job_id),
@@ -351,37 +419,54 @@ def generate_account_and_send_email():
                 link_id = str(uuid.uuid4())
                 cursor.execute(
                     """
-                    INSERT INTO link_recruiter_with_candidate (link_id, recruiter_id, candidate_id, job_id)
+                    INSERT INTO link_recruiter_with_candidate 
+                    (link_id, recruiter_id, candidate_id, job_id) 
                     VALUES (?, ?, ?, ?)
                     """,
                     (link_id, recruiter_id, candidate_id, job_id),
                 )
                 conn.commit()
 
-            conn.commit()
-
             matching_id = str(uuid.uuid4())
             matching_score = candidate.get("matching_score")
             cursor.execute(
                 """
-                INSERT OR REPLACE INTO cv_matching_scores (matching_id, candidate_id, job_id, matching_score)
+                INSERT OR REPLACE INTO cv_matching_scores 
+                (matching_id, candidate_id, job_id, matching_score)
                 VALUES (?, ?, ?, ?)
                 """,
                 (matching_id, candidate_id, job_id, matching_score),
             )
-
             conn.commit()
 
-            msg = Message(
-                "Your Account Information",
-                sender="srecproduct@gmail.com",
-                recipients=[email],
-            )
-            msg.body = f"Dear {full_name},\n\nYour account has been successfully created.\n\nUsername: {user_name}\nPassword: {password}\n\nBest regards,\nSREC team"
-            mail.send(msg)
+        msg = Message(
+            "Your SREC Account Information",
+            sender="srecproduct@gmail.com",
+            recipients=[email],
+        )
+
+        msg.html = render_template_string(
+            email_template,
+            full_name=full_name,
+            user_name=user_name,
+            password=password
+        )
+
+        msg.body = f"""
+        Welcome to SREC
+        Dear {full_name},
+        Your account has been successfully created. Below are your login credentials:
+        Username: {user_name}
+        Password: {password}
+        Please keep this information safe and change your password upon your first login.
+        If you have any questions or need assistance, please don't hesitate to contact our support team.
+        Best regards, SREC Team
+        This is an automated message, please do not reply directly to this email.
+        """
+
+        mail.send(msg)
 
         conn.close()
-
         return (
             jsonify(
                 {
@@ -395,6 +480,7 @@ def generate_account_and_send_email():
         conn.rollback()
         conn.close()
         return jsonify({"msg": f"Database error: {str(e)}"}), 500
+
     except Exception as e:
         conn.rollback()
         conn.close()
@@ -710,9 +796,132 @@ def get_final_code_score():
         conn.close()
 
 
+# Survey module :
+with open("./static/survey/data.json", "r", encoding="utf-8") as f:
+    data = json.load(f)
+categories = {
+    "EXT": {f"EXT{i}": [] for i in range(1, 11)},
+    "EST": {f"EST{i}": [] for i in range(1, 11)},
+    "OPN": {f"OPN{i}": [] for i in range(1, 11)},
+    "AGR": {f"AGR{i}": [] for i in range(1, 11)},
+    "CSN": {f"CSN{i}": [] for i in range(1, 11)},
+}
+for item in data:
+    category = item["Type"][:3]
+    subcategory = item["Type"]
+    if category in categories and subcategory in categories[category]:
+        categories[category][subcategory].append(item)
+
+
+@app.route("/random_questions", methods=["GET"])
+def get_random_questions():
+    selected_questions = []
+    for category, subcategories in categories.items():
+        for subcategory, questions in subcategories.items():
+            if questions:
+                selected_questions.extend(random.sample(questions, 1))
+    if len(selected_questions) != 50:
+        return (
+            jsonify(
+                {"error": f"Expected 50 questions, but got {len(selected_questions)}"}
+            ),
+            400,
+        )
+    final_questions = []
+    main_categories = {"EXT": [], "EST": [], "OPN": [], "AGR": [], "CSN": []}
+    for question in selected_questions:
+        category = question["Type"][:3]
+        if category in main_categories:
+            main_categories[category].append(question)
+    for category, questions in main_categories.items():
+        if len(questions) >= 4:
+            final_questions.extend(random.sample(questions, 4))
+    if len(final_questions) != 20:
+        return (
+            jsonify(
+                {"error": f"Expected 20 questions, but got {len(final_questions)}"}
+            ),
+            400,
+        )
+    for idx, question in enumerate(final_questions, start=1):
+        question["ID"] = f"Q{idx}"
+    return jsonify(final_questions)
+
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid JSON format or empty data'}), 400
+        
+        # Đảm bảo data là một list các item
+        if not isinstance(data, list):
+            data = [data]
+        
+        features = []
+        for item in data:
+            try:
+                answers = item['Answer']
+                features.append([answers[f'Q{i+1}'] for i in range(20)])
+            except KeyError as e:
+                return jsonify({'error': f'Missing key in Answer: {str(e)}'}), 400
+        
+        features = np.array(features)
+        
+        kmeans_model = joblib.load('./static/survey/kmeans_model.joblib')
+        cluster_means = joblib.load('./static/survey/cluster_means.joblib')
+        
+        cluster_labels = kmeans_model.predict(features)
+        mul_lr = joblib.load('./static/survey/logis.joblib')
+        
+        result = []
+        for item, label in zip(data, cluster_labels):
+            means = cluster_means.iloc[label]
+            
+            cluster_data = means[['openess', 'neuroticism', 'conscientiousness', 'agreeableness', 'extroversion']]
+            cluster_array = cluster_data.values.reshape(1, -1)
+            cluster_probabilities = mul_lr.predict_proba(cluster_array)[0]
+            
+            label_probabilities = []
+            for lr_label, prob in zip(mul_lr.classes_, cluster_probabilities):
+                label_probabilities.append({'label': lr_label, 'probability': float(prob)})
+            
+            item_with_label = item.copy()
+            item_with_label['cluster'] = int(label)
+            item_with_label['probabilities'] = label_probabilities
+            result.append(item_with_label)
+        
+        return jsonify({'result': result})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 # Virtual-Interview-Module
 
 interview_lock = Lock()
+
+
+@lru_cache(maxsize=100)
+def file_to_b64(file_path):
+    try:
+        with open(file_path, "rb") as file:
+            file_content = file.read()
+            base64_string = base64.b64encode(file_content).decode("utf-8")
+        return base64_string
+    except Exception as e:
+        print(f"Error converting file to base64: {e}")
+        return None
+
+
+def fetch_questions(question_type):
+    with sqlite3.connect("./databases/srec.db") as conn:
+        cursor = conn.cursor()
+        query = "SELECT * FROM question_data WHERE question_type LIKE ?"
+        cursor.execute(query, (question_type,))
+        return cursor.fetchall()
 
 
 @app.route("/get-virtual-interview-scores", methods=["POST", "GET"])
@@ -853,6 +1062,7 @@ def get_virtual_interview_scores():
                             "question_type": question[1],
                             "question": question[2],
                             "answer": question[3],
+                            "video_data": file_to_b64(question[4]),
                         }
                         logger.debug(f"Question data fetched: {question_obj}")
                         if "Basic questions" in question[1]:
@@ -986,7 +1196,7 @@ def analyze():
         candidate_id = data.get("candidate_id")
         current_question_index = data.get("current_question_index")
         interview_id = data.get("interview_id")
-        question_id = data.get("question_id")
+        question_id = int(data.get("question_id"))
 
         if not interview_id or not question_id:
             return jsonify({"error": "interview_id and question_id are required"}), 400
@@ -1022,7 +1232,7 @@ def analyze():
             INSERT INTO video_analysis_data (analysis_id, prediction_data, answer_matching_data)
             VALUES (?, ?, ?)
             """,
-            (id, analyze_result_json, cosine_sim),
+            (id, analyze_result_json, cosine_sim)
         )
 
         cursor.execute(
@@ -1031,7 +1241,7 @@ def analyze():
             SET analysis_id = ?
             WHERE interview_id = ?
             """,
-            (id, interview_id),
+            (id, interview_id)
         )
 
         conn.commit()
@@ -1148,6 +1358,62 @@ def get_summary_virtual_interview():
         result.append(dict(zip([column[0] for column in cursor.description], row)))
 
     return jsonify(result)
+
+email_template = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Account Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #0066cc;  /* Màu xanh nước biển */
+        }
+        .credentials {
+            background-color: #f0f8ff;  /* Màu nền nhạt xanh */
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to SREC</h1>
+        <p>Dear {{full_name}},</p>
+        <p>Your account has been successfully created. Below are your login credentials:</p>
+        <div class="credentials">
+            <p><strong>Username:</strong> {{user_name}}</p>
+            <p><strong>Password:</strong> {{password}}</p>
+        </div>
+        <p>Please keep this information safe and change your password upon your first login.</p>
+        <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+        <p>Best regards,<br>SREC Team</p>
+        <div class="footer">
+            <p>This is an automated message, please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
 
 
 if __name__ == "__main__":

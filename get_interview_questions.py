@@ -1,54 +1,56 @@
 import random
 import sqlite3
+import os
+import base64
+from functools import lru_cache
+
+DATABASE_PATH = "./databases/srec.db"
+VIDEO_FOLDER = "./static/video_interview"
+
+@lru_cache(maxsize=100)
+def file_to_b64(filename, folder=VIDEO_FOLDER):
+    try:
+        file_path = os.path.join(folder, filename)
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        with open(file_path, "rb") as file:
+            file_content = file.read()
+            base64_string = base64.b64encode(file_content).decode("utf-8")
+        return base64_string
+    except Exception as e:
+        print(f"Error converting file to base64: {e}")
+        return None
+
+def fetch_questions(question_type):
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        query = "SELECT * FROM question_data WHERE question_type LIKE ?"
+        cursor.execute(query, (question_type,))
+        return cursor.fetchall()
+
+def select_random_questions(questions, count=1):
+    return random.sample(questions, min(count, len(questions)))
+
+def format_question(question):
+    return {
+        "id": question[0],
+        "question_type": question[1],
+        "question": question[2],
+        "answer": question[3],
+        "video_data": file_to_b64(question[4])
+    }
 
 def get_interview_questions():
     try:
-        conn = sqlite3.connect("./databases/srec.db")
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT * FROM question_data where question_type = 'Basic questions'")
-        basic_questions = cursor.fetchall()
-        cursor.execute('SELECT * FROM question_data where question_type LIKE "Behavioral%"')
-        behavioral_questions = cursor.fetchall()
-        cursor.execute('SELECT * FROM question_data where question_type LIKE "Salary%"')
-        salary_questions = cursor.fetchall()
-
-        conn.close()
-
-        random_basic_index = random.randint(0, len(basic_questions) - 1)
-        random_behavioral_indices = random.sample(range(0, len(behavioral_questions)), 2)
-        random_salary_index = random.randint(0, len(salary_questions) - 1)
-
-        basic_question = basic_questions[random_basic_index]
-        behavioral_question_1 = behavioral_questions[random_behavioral_indices[0]]
-        behavioral_question_2 = behavioral_questions[random_behavioral_indices[1]]
-        salary_question = salary_questions[random_salary_index]
+        basic_questions = fetch_questions("Basic questions")
+        behavioral_questions = fetch_questions("Behavioral%")
+        salary_questions = fetch_questions("Salary%")
 
         result = {
-            "basic_questions": [{
-                "id": basic_question[0],
-                "question_type": basic_question[1],
-                "question": basic_question[2],
-                "answer": basic_question[3]
-            }],
-            "behavioral_questions": [{
-                "id": behavioral_question_1[0],
-                "question_type": behavioral_question_1[1],
-                "question": behavioral_question_1[2],
-                "answer": behavioral_question_1[3]
-            },
-            {
-                "id": behavioral_question_2[0],
-                "question_type": behavioral_question_2[1],
-                "question": behavioral_question_2[2],
-                "answer": behavioral_question_2[3]
-            }],
-            "salary_questions": [{
-                "id": salary_question[0],
-                "question_type": salary_question[1],
-                "question": salary_question[2],
-                "answer": salary_question[3]
-            }]
+            "basic_questions": [format_question(q) for q in select_random_questions(basic_questions)],
+            "behavioral_questions": [format_question(q) for q in select_random_questions(behavioral_questions, 2)],
+            "salary_questions": [format_question(q) for q in select_random_questions(salary_questions)]
         }
         
         return result

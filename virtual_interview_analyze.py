@@ -86,32 +86,28 @@ def video_prediction(img):
     return results
 
 def wav_prediction(file_path):
-    try:
-        mp4_to_wav(file_path)
-        wav_path = "./speech.wav"
-        pred_emotion, pred_fluency, average_fluency = model.predict(wav_path, cutdur=2)
-        max_fluency = 2
-        min_fluency = 0 
-        normalized_fluency = (average_fluency - min_fluency) / (max_fluency - min_fluency) * 100
-        pred_emotion, pred_fluency, normalized_fluency
-        os.remove('./speech.mp3')
-        os.remove('./speech.wav')
-        return {
-            'emotion_prediction': pred_emotion,
-            'fluency_prediction': pred_fluency,
-            'pronunciation_score': normalized_fluency
-        }
-    except:
+    mp4_to_wav(file_path)
+    wav_path = "./speech.wav"
+    if not os.path.exists(wav_path):
         if os.path.exists('./speech.mp3'):
             os.remove('./speech.mp3')
-        if os.path.exists('./speech.wav'):
-            os.remove('./speech.wav')
         return {
             'emotion_prediction': 'Voice not detected',
             'fluency_prediction': 'Voice not detected',
-            'pronunciation_score': 'Voice not detected'
-        }
+            'pronunciation_score': 'Voice not detected'}  
     
+    pred_emotion, pred_fluency, average_fluency = model.predict(wav_path, cutdur=2)
+    max_fluency = 2
+    min_fluency = 0 
+    normalized_fluency = (average_fluency - min_fluency) / (max_fluency - min_fluency) * 100
+    pred_emotion, pred_fluency, normalized_fluency
+    os.remove('./speech.mp3')
+    os.remove('./speech.wav')
+    return {
+        'emotion_prediction': pred_emotion,
+        'fluency_prediction': pred_fluency,
+        'pronunciation_score': normalized_fluency
+    }    
     
 def prediction(video_path):
     cap = cv2.VideoCapture(video_path)
@@ -133,11 +129,11 @@ def prediction(video_path):
                 'emotion': pred['emotion']
             })
         frame_count += 1
-    print(len(video_pred))
-    if len(video_pred) > 7:
-        step = (len(video_pred)-1) / (7-1)
-        print(step)
-        video_pred = [video_pred[round(i*step)] for i in range(7)]
+    # print(len(video_pred))
+    # if len(video_pred) > 7:
+    #     step = (len(video_pred)-1) / (7-1)
+    #     print(step)
+    #     video_pred = [video_pred[round(i*step)] for i in range(7)]
             
     cap.release()
     cv2.destroyAllWindows()

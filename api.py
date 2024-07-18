@@ -791,10 +791,12 @@ def get_random_questions():
 def predict():
     try:
         data = request.get_json()
+
         if not data:
             return jsonify({"error": "Invalid JSON format or empty data"}), 400
 
-        # Đảm bảo data là một list các item
+        test_id = str(uuid.uuid4())
+
         if not isinstance(data, list):
             data = [data]
 
@@ -817,7 +819,6 @@ def predict():
         result = []
         for item, label in zip(data, cluster_labels):
             means = cluster_means.iloc[label]
-
             cluster_data = means[
                 [
                     "openess",
@@ -840,6 +841,35 @@ def predict():
             item_with_label["cluster"] = int(label)
             item_with_label["probabilities"] = label_probabilities
             result.append(item_with_label)
+
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            insert_query = """
+            INSERT INTO personality_test_scores (
+                test_id, candidate_id, status, dependable, extraverted, lively, responsible, serious
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """
+
+            # Create a dictionary for easier access
+            prob_dict = {prob["label"]: prob["probability"] for prob in label_probabilities}
+
+            cursor.execute(
+                insert_query,
+                (
+                    str(uuid.uuid4()),
+                    item["candidate_id"],
+                    item["status"],
+                    prob_dict.get("dependable"),
+                    prob_dict.get("extraverted"),
+                    prob_dict.get("lively"),
+                    prob_dict.get("responsible"),
+                    prob_dict.get("serious"),
+                ),
+            )
+
+            conn.commit()
+            conn.close()
 
         return jsonify({"result": result})
 
@@ -1308,6 +1338,31 @@ def get_summary_virtual_interview():
 
     return jsonify(result)
 
+@app.route("/get-summary-survey", methods=["POST"])
+@cross_origin()
+def get_summary_survey():
+    data = request.get_json()
+    candidate_id = data.get("candidate_id")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT * FROM personality_test_scores
+        WHERE candidate_id = ? AND status = 1
+        """,
+        (candidate_id,),
+    )
+    survey_data = cursor.fetchall()
+
+    conn.close()
+
+    result = []
+    for row in survey_data:
+        result.append(dict(zip([column[0] for column in cursor.description], row)))
+
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run()

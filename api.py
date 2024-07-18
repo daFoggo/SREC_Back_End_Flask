@@ -35,9 +35,8 @@ from coding_conventions_checker import get_error, coding_conventions_checker
 from get_interview_questions import get_interview_questions
 from core_answer_matching import answer_matching
 from virtual_interview_analyze import prediction
-
-# response fix
 from flask import Response
+from flask import render_template
 
 load_dotenv()
 
@@ -178,7 +177,7 @@ def login_candidate():
 @app.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
-    
+
     return jsonify({"msg": "User logged out successfully"}), 200
 
 
@@ -323,62 +322,6 @@ def generate_account_and_send_email():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    email_template = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your Account Information</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-            }
-            .container {
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-            }
-            h1 {
-                color: #4a4a4a;
-            }
-            .credentials {
-                background-color: #f9f9f9;
-                padding: 10px;
-                border-radius: 5px;
-                margin-bottom: 20px;
-            }
-            .footer {
-                margin-top: 20px;
-                font-size: 0.9em;
-                color: #666;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Welcome to SREC</h1>
-            <p>Dear {full_name},</p>
-            <p>Your account has been successfully created. Below are your login credentials:</p>
-            <div class="credentials">
-                <p><strong>Username:</strong> {user_name}</p>
-                <p><strong>Password:</strong> {password}</p>
-            </div>
-            <p>Please keep this information safe and change your password upon your first login.</p>
-            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-            <p>Best regards,<br>SREC Team</p>
-            <div class="footer">
-                <p>This is an automated message, please do not reply directly to this email.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
     try:
         for candidate in candidates:
             full_name = candidate.get("name")
@@ -433,7 +376,7 @@ def generate_account_and_send_email():
                 conn.commit()
 
             matching_id = str(uuid.uuid4())
-            matching_score = (candidate.get("cv_matching") * 100)
+            matching_score = candidate.get("cv_matching") * 100
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO cv_matching_scores 
@@ -444,32 +387,20 @@ def generate_account_and_send_email():
             )
             conn.commit()
 
-        msg = Message(
-            "Your SREC Account Information",
-            sender="srecproduct@gmail.com",
-            recipients=[email],
-        )
+            msg = Message(
+                "Your SREC Account Information",
+                sender="srecproduct@gmail.com",
+                recipients=[email],
+            )
 
-        msg.html = render_template_string(
-            email_template,
-            full_name=full_name,
-            user_name=user_name,
-            password=password
-        )
+            msg.html = render_template(
+                "account_info.html",
+                full_name=full_name,
+                user_name=user_name,
+                password=password,
+            )
 
-        msg.body = f"""
-        Welcome to SREC
-        Dear {full_name},
-        Your account has been successfully created. Below are your login credentials:
-        Username: {user_name}
-        Password: {password}
-        Please keep this information safe and change your password upon your first login.
-        If you have any questions or need assistance, please don't hesitate to contact our support team.
-        Best regards, SREC Team
-        This is an automated message, please do not reply directly to this email.
-        """
-
-        mail.send(msg)
+            mail.send(msg)
 
         conn.close()
         return (
@@ -622,7 +553,7 @@ def get_code_assessment_scores(**kwargs):
                 existing_data = cursor.fetchall()
                 print(existing_data)
 
-                for index,row in enumerate(existing_data):
+                for index, row in enumerate(existing_data):
                     print(row[2])
                     assessment_data.append(
                         {
@@ -635,7 +566,7 @@ def get_code_assessment_scores(**kwargs):
                             "status": row[6],
                         }
                     )
-                    problem_data[f'{index}_{row[2]}'] = {
+                    problem_data[f"{index}_{row[2]}"] = {
                         "id": row[7],
                         "source": row[8],
                         "name": row[9],
@@ -689,9 +620,13 @@ def get_code_assessment_scores(**kwargs):
     )
     print(problem_data.keys())
     return (
-        jsonify({"assessment_data": assessment_data,
+        jsonify(
+            {
+                "assessment_data": assessment_data,
                 "current_problem_index": current_problem_index,
-                "problem_data": problem_data}),
+                "problem_data": problem_data,
+            }
+        ),
         200,
     )
 
@@ -852,55 +787,64 @@ def get_random_questions():
     return jsonify(final_questions)
 
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
     try:
         data = request.get_json()
         if not data:
-            return jsonify({'error': 'Invalid JSON format or empty data'}), 400
-        
+            return jsonify({"error": "Invalid JSON format or empty data"}), 400
+
         # Đảm bảo data là một list các item
         if not isinstance(data, list):
             data = [data]
-        
+
         features = []
         for item in data:
             try:
-                answers = item['Answer']
-                features.append([answers[f'Q{i+1}'] for i in range(20)])
+                answers = item["Answer"]
+                features.append([answers[f"Q{i+1}"] for i in range(20)])
             except KeyError as e:
-                return jsonify({'error': f'Missing key in Answer: {str(e)}'}), 400
-        
+                return jsonify({"error": f"Missing key in Answer: {str(e)}"}), 400
+
         features = np.array(features)
-        
-        kmeans_model = joblib.load('./static/survey/kmeans_model.joblib')
-        cluster_means = joblib.load('./static/survey/cluster_means.joblib')
-        
+
+        kmeans_model = joblib.load("./static/survey/kmeans_model.joblib")
+        cluster_means = joblib.load("./static/survey/cluster_means.joblib")
+
         cluster_labels = kmeans_model.predict(features)
-        mul_lr = joblib.load('./static/survey/logis.joblib')
-        
+        mul_lr = joblib.load("./static/survey/logis.joblib")
+
         result = []
         for item, label in zip(data, cluster_labels):
             means = cluster_means.iloc[label]
-            
-            cluster_data = means[['openess', 'neuroticism', 'conscientiousness', 'agreeableness', 'extroversion']]
+
+            cluster_data = means[
+                [
+                    "openess",
+                    "neuroticism",
+                    "conscientiousness",
+                    "agreeableness",
+                    "extroversion",
+                ]
+            ]
             cluster_array = cluster_data.values.reshape(1, -1)
             cluster_probabilities = mul_lr.predict_proba(cluster_array)[0]
-            
+
             label_probabilities = []
             for lr_label, prob in zip(mul_lr.classes_, cluster_probabilities):
-                label_probabilities.append({'label': lr_label, 'probability': float(prob)})
-            
-            item_with_label = item.copy()
-            item_with_label['cluster'] = int(label)
-            item_with_label['probabilities'] = label_probabilities
-            result.append(item_with_label)
-        
-        return jsonify({'result': result})
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+                label_probabilities.append(
+                    {"label": lr_label, "probability": float(prob)}
+                )
 
+            item_with_label = item.copy()
+            item_with_label["cluster"] = int(label)
+            item_with_label["probabilities"] = label_probabilities
+            result.append(item_with_label)
+
+        return jsonify({"result": result})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # Virtual-Interview-Module
@@ -1236,7 +1180,7 @@ def analyze():
             INSERT INTO video_analysis_data (analysis_id, prediction_data, answer_matching_data)
             VALUES (?, ?, ?)
             """,
-            (id, analyze_result_json, cosine_sim)
+            (id, analyze_result_json, cosine_sim),
         )
 
         cursor.execute(
@@ -1245,7 +1189,7 @@ def analyze():
             SET analysis_id = ?
             WHERE interview_id = ?
             """,
-            (id, interview_id)
+            (id, interview_id),
         )
 
         conn.commit()
@@ -1267,6 +1211,7 @@ def analyze():
 def get_recruiter_with_candidates():
     data = request.get_json()
     recruiter_id = data.get("recruiter_id")
+    job_id = data.get("job_id")
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -1277,9 +1222,9 @@ def get_recruiter_with_candidates():
         FROM candidates c
         JOIN link_recruiter_with_candidate l
         ON c.candidate_id = l.candidate_id
-        WHERE l.recruiter_id = ?
+        WHERE l.recruiter_id = ? AND l.job_id = ?
         """,
-        (recruiter_id,),
+        (recruiter_id, job_id),
     )
 
     rows = cursor.fetchall()
@@ -1362,62 +1307,6 @@ def get_summary_virtual_interview():
         result.append(dict(zip([column[0] for column in cursor.description], row)))
 
     return jsonify(result)
-
-email_template = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Account Information</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        h1 {
-            color: #0066cc;  /* Màu xanh nước biển */
-        }
-        .credentials {
-            background-color: #f0f8ff;  /* Màu nền nhạt xanh */
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .footer {
-            margin-top: 20px;
-            font-size: 0.9em;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Welcome to SREC</h1>
-        <p>Dear {{full_name}},</p>
-        <p>Your account has been successfully created. Below are your login credentials:</p>
-        <div class="credentials">
-            <p><strong>Username:</strong> {{user_name}}</p>
-            <p><strong>Password:</strong> {{password}}</p>
-        </div>
-        <p>Please keep this information safe and change your password upon your first login.</p>
-        <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-        <p>Best regards,<br>SREC Team</p>
-        <div class="footer">
-            <p>This is an automated message, please do not reply directly to this email.</p>
-        </div>
-    </div>
-</body>
-</html>
-"""
 
 
 if __name__ == "__main__":

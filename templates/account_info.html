@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #10a1fc;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h1 {
+            color: #10a1fc;
+        }
+        .content p {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+        .content ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .content ul li {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #f0f0f5;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to SREC</h1>
+        </div>
+        <div class="content">
+            <p>Dear {{ full_name }},</p>
+            <p>Your account has been successfully created. Below are your login credentials:</p>
+            <ul>
+                <li>Username: {{ user_name }}</li>
+                <li>Password: {{ password }}</li>
+            </ul>
+            <p>Please keep this information safe and change your password upon your first login.</p>
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            <p>Best regards,</p>
+            <p>SREC Team</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message, please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

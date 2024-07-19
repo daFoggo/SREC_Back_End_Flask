@@ -351,6 +351,7 @@ def generate_account_and_send_email():
             cursor.execute(
                 "SELECT candidate_id FROM candidates WHERE email = ?", (email,)
             )
+            
             candidate_id = cursor.fetchone()[0]
 
             cursor.execute(

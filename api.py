@@ -328,54 +328,64 @@ def generate_account_and_send_email():
             email = candidate.get("gmail")
             role = "candidate"
             level = job_level
-            user_name = generate_username(full_name, email)
-            password = generate_password()
 
-            cursor.execute(
-                """
-                INSERT INTO candidates 
-                (candidate_id, full_name, email, user_name, password, role, level)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    generate_candidate_id(),
-                    full_name,
-                    email,
-                    user_name,
-                    password,
-                    role,
-                    level,
-                ),
-            )
+            # Check if candidate already exists
+            cursor.execute("SELECT candidate_id FROM candidates WHERE email = ?", (email,))
+            existing_candidate = cursor.fetchone()
 
-            cursor.execute(
-                "SELECT candidate_id FROM candidates WHERE email = ?", (email,)
-            )
-            
-            candidate_id = cursor.fetchone()[0]
+            if existing_candidate:
+                candidate_id = existing_candidate[0]
+            else:
+                user_name = generate_username(full_name, email)
+                password = generate_password()
 
-            cursor.execute(
-                """
-                SELECT COUNT(*) 
-                FROM link_recruiter_with_candidate 
-                WHERE recruiter_id = ? AND candidate_id = ? AND job_id = ?
-                """,
-                (recruiter_id, candidate_id, job_id),
-            )
-            result = cursor.fetchone()
-
-            if result[0] == 0:
-                link_id = str(uuid.uuid4())
                 cursor.execute(
                     """
-                    INSERT INTO link_recruiter_with_candidate 
-                    (link_id, recruiter_id, candidate_id, job_id) 
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO candidates 
+                    (candidate_id, full_name, email, user_name, password, role, level)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (link_id, recruiter_id, candidate_id, job_id),
+                    (
+                        generate_candidate_id(),
+                        full_name,
+                        email,
+                        user_name,
+                        password,
+                        role,
+                        level,
+                    ),
                 )
-                conn.commit()
+                
+                cursor.execute("SELECT candidate_id FROM candidates WHERE email = ?", (email,))
+                candidate_id = cursor.fetchone()[0]
 
+                # Send email only for new candidates
+                msg = Message(
+                    "Your SREC Account Information",
+                    sender="srecproduct@gmail.com",
+                    recipients=[email],
+                )
+
+                msg.html = render_template(
+                    "account_info.html",
+                    full_name=full_name,
+                    user_name=user_name,
+                    password=password,
+                )
+
+                mail.send(msg)
+
+            # Create or update link between recruiter and candidate
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO link_recruiter_with_candidate 
+                (link_id, recruiter_id, candidate_id, job_id) 
+                VALUES (?, ?, ?, ?)
+                """,
+                (str(uuid.uuid4()), recruiter_id, candidate_id, job_id),
+            )
+
+            # Update or insert CV matching score
             matching_id = str(uuid.uuid4())
             matching_score = candidate.get("cv_matching") * 100
             cursor.execute(
@@ -386,32 +396,10 @@ def generate_account_and_send_email():
                 """,
                 (matching_id, candidate_id, job_id, matching_score),
             )
-            conn.commit()
 
-            msg = Message(
-                "Your SREC Account Information",
-                sender="srecproduct@gmail.com",
-                recipients=[email],
-            )
-
-            msg.html = render_template(
-                "account_info.html",
-                full_name=full_name,
-                user_name=user_name,
-                password=password,
-            )
-
-            mail.send(msg)
-
+        conn.commit()
         conn.close()
-        return (
-            jsonify(
-                {
-                    "msg": "Candidates accounts created successfully, linked with recruiter, and emails sent"
-                }
-            ),
-            200,
-        )
+        return jsonify({"msg": "Candidates processed successfully"}), 200
 
     except sqlite3.Error as e:
         conn.rollback()
@@ -422,7 +410,6 @@ def generate_account_and_send_email():
         conn.rollback()
         conn.close()
         return jsonify({"msg": f"Unexpected error: {str(e)}"}), 500
-
 
 # Code assessment module
 @app.route("/get-code-assessment-scores", methods=["POST"])

@@ -1,3 +1,4 @@
+import pycodestyle
 import json
 from langchain.prompts import PromptTemplate
 from langchain.output_parsers import ResponseSchema
@@ -62,10 +63,10 @@ def coding_conventions_checker(coding_language, text):
     coding_conventions_checker_result = []
 
     if coding_language.lower().strip() == "python":
-        with open("coding_conventions_checker.py", "w", encoding="utf-8") as file:
+        with open("testing_coding_file.py", "w", encoding="utf-8") as file:
             file.write(text)
         result = subprocess.run(
-            ["pycodestyle", "coding_conventions_checker.py"],
+            ["pycodestyle", "testing_coding_file.py"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -90,7 +91,7 @@ def coding_conventions_checker(coding_language, text):
                     maximum_score -= error_score
                 except:
                     print("Not found {error_code} error!")
-        os.remove("coding_conventions_checker.py")
+        os.remove("testing_coding_file.py")
     else:
         maximum_score = "Unable to score not-python file"
 

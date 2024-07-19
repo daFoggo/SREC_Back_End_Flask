@@ -499,7 +499,7 @@ def get_code_assessment_scores(**kwargs):
                                 False,
                             )
                         )
-                        problem_data[problem_id] = {
+                        problem_data[f"{i}_{problem_id}"] = {
                             "id": problem_id,
                             "source": code_data[f"test_{i + 1}"]["source"],
                             "name": code_data[f"test_{i + 1}"]["name"],

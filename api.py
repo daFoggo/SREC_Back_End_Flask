@@ -330,7 +330,9 @@ def generate_account_and_send_email():
             level = job_level
 
             # Check if candidate already exists
-            cursor.execute("SELECT candidate_id FROM candidates WHERE email = ?", (email,))
+            cursor.execute(
+                "SELECT candidate_id FROM candidates WHERE email = ?", (email,)
+            )
             existing_candidate = cursor.fetchone()
 
             if existing_candidate:
@@ -355,11 +357,12 @@ def generate_account_and_send_email():
                         level,
                     ),
                 )
-                
-                cursor.execute("SELECT candidate_id FROM candidates WHERE email = ?", (email,))
+
+                cursor.execute(
+                    "SELECT candidate_id FROM candidates WHERE email = ?", (email,)
+                )
                 candidate_id = cursor.fetchone()[0]
 
-                # Send email only for new candidates
                 msg = Message(
                     "Your SREC Account Information",
                     sender="srecproduct@gmail.com",
@@ -375,7 +378,6 @@ def generate_account_and_send_email():
 
                 mail.send(msg)
 
-            # Create or update link between recruiter and candidate
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO link_recruiter_with_candidate 
@@ -385,7 +387,6 @@ def generate_account_and_send_email():
                 (str(uuid.uuid4()), recruiter_id, candidate_id, job_id),
             )
 
-            # Update or insert CV matching score
             matching_id = str(uuid.uuid4())
             matching_score = candidate.get("cv_matching") * 100
             cursor.execute(
@@ -840,7 +841,9 @@ def predict():
             """
 
             # Create a dictionary for easier access
-            prob_dict = {prob["label"]: prob["probability"] for prob in label_probabilities}
+            prob_dict = {
+                prob["label"]: prob["probability"] for prob in label_probabilities
+            }
 
             cursor.execute(
                 insert_query,
@@ -1326,6 +1329,7 @@ def get_summary_virtual_interview():
 
     return jsonify(result)
 
+
 @app.route("/get-summary-survey", methods=["POST"])
 @cross_origin()
 def get_summary_survey():
@@ -1351,6 +1355,7 @@ def get_summary_survey():
         result.append(dict(zip([column[0] for column in cursor.description], row)))
 
     return jsonify(result)
+
 
 if __name__ == "__main__":
     app.run()
